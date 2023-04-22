@@ -1,4 +1,4 @@
-# chatbot
+# Vortex - Voice Assistant Chatbot
 
 A new Flutter project.
 
