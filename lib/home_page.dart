@@ -1,8 +1,10 @@
 import 'package:chatbot/feature_box.dart';
+import 'package:chatbot/openai_service.dart';
 import 'package:flutter/material.dart';
 import 'package:chatbot/pallete.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,11 +15,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final speechToText = SpeechToText();
+  final flutterTts = FlutterTts();
   String lastWords = '';
+  final OpenAIService openAIService = OpenAIService();
   @override
   void initState() {
     super.initState();
     initSpeechToText();
+    initTextToSpeech();
+  }
+
+  Future<void> initTextToSpeech() async {
+    await flutterTts.setSharedInstance(true);
+    setState(() {});
   }
 
   Future<void> initSpeechToText() async {
@@ -41,10 +51,15 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> systemSpeak(String content) async {
+    await flutterTts.speak(content);
+  }
+
   @override
   void dispose() {
     super.dispose();
     speechToText.stop();
+    flutterTts.stop();
   }
 
   @override
@@ -153,6 +168,8 @@ class _HomePageState extends State<HomePage> {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
             await startListening();
           } else if (speechToText.isListening) {
+            final speech = await openAIService.isArtPromptAPI('lastWords');
+            await systemSpeak(speech);
             await stopListening();
           } else {
             initSpeechToText();
