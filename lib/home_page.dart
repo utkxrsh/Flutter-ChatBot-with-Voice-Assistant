@@ -21,6 +21,8 @@ class _HomePageState extends State<HomePage> {
   final OpenAIService openAIService = OpenAIService();
   String? generatedContent;
   String? generatedImageUrl;
+  int start = 200;
+  int delay = 200;
 
   @override
   void initState() {
@@ -143,19 +145,21 @@ class _HomePageState extends State<HomePage> {
                 child: ClipRRect(
                     borderRadius: BorderRadius.circular(20.0),
                     child: Image.network(generatedImageUrl!))),
-          Visibility(
-            visible: generatedContent == null && generatedImageUrl == null,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.only(left: 22, top: 10),
-              alignment: Alignment.centerLeft,
-              child: const Text(
-                'Here are few commands',
-                style: TextStyle(
-                    fontFamily: 'Cera Pro',
-                    fontWeight: FontWeight.bold,
-                    color: Pallete.mainFontColor,
-                    fontSize: 20),
+          SlideInLeft(
+            child: Visibility(
+              visible: generatedContent == null && generatedImageUrl == null,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(left: 22, top: 10),
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  'Here are few commands',
+                  style: TextStyle(
+                      fontFamily: 'Cera Pro',
+                      fontWeight: FontWeight.bold,
+                      color: Pallete.mainFontColor,
+                      fontSize: 20),
+                ),
               ),
             ),
           ),
@@ -163,55 +167,68 @@ class _HomePageState extends State<HomePage> {
           Visibility(
             visible: generatedContent == null && generatedImageUrl == null,
             child: Column(
-              children: const [
-                FeatureBox(
-                  color: Color.fromARGB(255, 91, 155, 250),
-                  headerText: 'ChatGPT',
-                  descriptionText:
-                      'A smarter way to stay organized with ChatGPT.',
+              children: [
+                SlideInLeft(
+                  delay: Duration(milliseconds: start),
+                  child: const FeatureBox(
+                    color: Color.fromARGB(255, 91, 155, 250),
+                    headerText: 'ChatGPT',
+                    descriptionText:
+                        'A smarter way to stay organized with ChatGPT.',
+                  ),
                 ),
-                FeatureBox(
-                  color: Color.fromARGB(255, 156, 214, 251),
-                  headerText: 'Dall-E',
-                  descriptionText:
-                      'Get inspired and stay creative with your personal assistant powered by Dall-E.',
+                SlideInLeft(
+                  delay: Duration(milliseconds: start + delay),
+                  child: const FeatureBox(
+                    color: Color.fromARGB(255, 156, 214, 251),
+                    headerText: 'Dall-E',
+                    descriptionText:
+                        'Get inspired and stay creative with your personal assistant powered by Dall-E.',
+                  ),
                 ),
-                FeatureBox(
-                  color: Pallete.thirdSuggestionBoxColor,
-                  headerText: 'Smart Voice Assistant',
-                  descriptionText:
-                      'Get best of both worlds with a voice assistant powered by Dall-E & ChatGPT.',
+                SlideInLeft(
+                  delay: Duration(milliseconds: start + 2 * delay),
+                  child: const FeatureBox(
+                    color: Pallete.thirdSuggestionBoxColor,
+                    headerText: 'Smart Voice Assistant',
+                    descriptionText:
+                        'Get best of both worlds with a voice assistant powered by Dall-E & ChatGPT.',
+                  ),
                 ),
               ],
             ),
           )
         ]),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color.fromARGB(255, 70, 248, 153),
-        onPressed: () async {
-          if (await speechToText.hasPermission && speechToText.isNotListening) {
-            await startListening();
-          } else if (speechToText.isListening) {
-            final speech = await openAIService.isArtPromptAPI('lastWords');
-            if (speech.contains('https')) {
-              generatedImageUrl = speech;
-              generatedContent = null;
-              setState(() {});
+      floatingActionButton: ZoomIn(
+        delay: Duration(milliseconds: start + 4 * delay),
+        child: FloatingActionButton(
+          backgroundColor: const Color.fromARGB(255, 70, 248, 153),
+          onPressed: () async {
+            if (await speechToText.hasPermission &&
+                speechToText.isNotListening) {
+              await startListening();
+            } else if (speechToText.isListening) {
+              final speech = await openAIService.isArtPromptAPI('lastWords');
+              if (speech.contains('https')) {
+                generatedImageUrl = speech;
+                generatedContent = null;
+                setState(() {});
+              } else {
+                generatedImageUrl = null;
+                generatedContent = speech;
+                setState(() {});
+                await systemSpeak(speech);
+              }
+              await stopListening();
             } else {
-              generatedImageUrl = null;
-              generatedContent = speech;
-              setState(() {});
-              await systemSpeak(speech);
+              initSpeechToText();
             }
-            await stopListening();
-          } else {
-            initSpeechToText();
-          }
-        },
-        child: Icon(
-          speechToText.isListening ? Icons.stop : Icons.mic_rounded,
-          size: 30,
+          },
+          child: Icon(
+            speechToText.isListening ? Icons.stop : Icons.mic_rounded,
+            size: 30,
+          ),
         ),
       ),
     );
