@@ -12,7 +12,7 @@ A cross-platform voice assistant chatbot built with Flutter for Android and iOS 
 
 ## Screenshots
 
-[![Screenshot_1682109598](https://postimg.cc/mtCgkDSp)](https://postimg.cc/mtCgkDSp)
+![Vortex](https://postimg.cc/mtCgkDSp "Vortex- Voice Assistant")
 ## Dependencies
 
 - animate_do: ^3.0.2
